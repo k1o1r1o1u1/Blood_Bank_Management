@@ -55,10 +55,15 @@ cd Blood_Bank_Management
    ```bash
    # From the project root:
    mysql -u root -p blood_bank < database/schema.sql
-   mysql -u root -p blood_bank < database/seed.sql
+   mysql -u root -p blood_bank < database/indexes.sql
    mysql -u root -p blood_bank < database/views.sql
    mysql -u root -p blood_bank < database/procedures.sql
+   mysql -u root -p blood_bank < database/seed.sql
    mysql -u root -p blood_bank < database/triggers.sql
+   ```
+   *Or import everything in one command:*
+   ```bash
+   mysql -u root -p < database/blood_bank_complete.sql
    ```
    *(If your MySQL user has no password, omit `-p`)*
 
