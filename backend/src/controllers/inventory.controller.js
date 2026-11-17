@@ -7,7 +7,7 @@ async function getInventorySummary(req, res, next) {
       SELECT 
         bg.blood_group_id,
         bg.group_name AS blood_group,
-        COUNT(CASE WHEN bu.status = 'Available' THEN 1 END) AS available_units,
+        COUNT(CASE WHEN bu.status = 'Available' AND bu.expiry_date >= CURDATE() THEN 1 END) AS available_units,
         COUNT(CASE WHEN bu.status = 'Reserved' THEN 1 END) AS reserved_units,
         COUNT(CASE WHEN bu.status = 'Issued' THEN 1 END) AS issued_units,
         COUNT(CASE WHEN bu.status = 'Expired' OR (bu.expiry_date < CURDATE() AND bu.status = 'Available') THEN 1 END) AS expired_units,

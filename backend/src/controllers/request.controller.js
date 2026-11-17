@@ -3,6 +3,13 @@ const { pool } = require('../config/database');
 // GET /api/requests - Retrieve blood requests with hospital and blood group details
 async function getAllRequests(req, res, next) {
   try {
+    if (req.user && req.user.role === 'Donor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Donor accounts cannot access hospital requisitions'
+      });
+    }
+
     const { status, urgency, hospital_id } = req.query;
 
     let query = `
@@ -32,12 +39,13 @@ async function getAllRequests(req, res, next) {
       query += ` AND br.urgency = ?`;
       params.push(urgency);
     }
-    if (hospital_id) {
+    const targetHospitalId = (req.user && req.user.role === 'Hospital') ? req.user.hospital_id : hospital_id;
+    if (targetHospitalId) {
       query += ` AND br.hospital_id = ?`;
-      params.push(hospital_id);
+      params.push(targetHospitalId);
     }
 
-    query += ` ORDER BY FIELD(br.urgency, 'Critical', 'Urgent', 'Normal'), br.request_date DESC`;
+    query += ` ORDER BY br.request_date DESC, br.request_id DESC`;
 
     const [requests] = await pool.query(query, params);
 
@@ -53,6 +61,13 @@ async function getAllRequests(req, res, next) {
 // GET /api/requests/:id - Retrieve a single blood request
 async function getRequestById(req, res, next) {
   try {
+    if (req.user && req.user.role === 'Donor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Donor accounts cannot access hospital requisitions'
+      });
+    }
+
     const { id } = req.params;
 
     const [rows] = await pool.query(`
@@ -81,6 +96,13 @@ async function getRequestById(req, res, next) {
       });
     }
 
+    if (req.user && req.user.role === 'Hospital' && Number(rows[0].hospital_id) !== Number(req.user.hospital_id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You cannot access other hospitals' requisitions"
+      });
+    }
+
     res.json({
       success: true,
       data: rows[0]
@@ -93,9 +115,17 @@ async function getRequestById(req, res, next) {
 // POST /api/requests - Create a new blood request
 async function createRequest(req, res, next) {
   try {
-    const { hospital_id, blood_group_id, quantity_required, urgency, request_date } = req.body;
+    if (req.user && req.user.role === 'Donor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Donor accounts cannot create hospital requisitions'
+      });
+    }
 
-    if (!hospital_id || !blood_group_id || !quantity_required) {
+    const { hospital_id, blood_group_id, quantity_required, urgency, request_date } = req.body;
+    const effectiveHospitalId = (req.user && req.user.role === 'Hospital') ? req.user.hospital_id : hospital_id;
+
+    if (!effectiveHospitalId || !blood_group_id || !quantity_required) {
       return res.status(400).json({
         success: false,
         message: 'hospital_id, blood_group_id, and quantity_required are required'
@@ -116,7 +146,7 @@ async function createRequest(req, res, next) {
     const [result] = await pool.query(
       `INSERT INTO blood_requests (hospital_id, blood_group_id, quantity_required, request_date, urgency, status)
        VALUES (?, ?, ?, ?, ?, 'Pending')`,
-      [hospital_id, blood_group_id, quantity_required, effectiveDate, selectedUrgency]
+      [effectiveHospitalId, blood_group_id, quantity_required, effectiveDate, selectedUrgency]
     );
 
     res.status(201).json({
@@ -124,7 +154,7 @@ async function createRequest(req, res, next) {
       message: 'Blood request created successfully',
       data: {
         request_id: result.insertId,
-        hospital_id,
+        hospital_id: effectiveHospitalId,
         blood_group_id,
         quantity_required,
         request_date: effectiveDate,

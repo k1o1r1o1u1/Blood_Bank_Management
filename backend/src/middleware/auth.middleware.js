@@ -23,6 +23,21 @@ function verifyToken(req, res, next) {
   }
 }
 
+function optionalAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'blood_bank_jwt_secret_key');
+      req.user = decoded;
+    } catch (error) {
+      // Soft fail for optional authentication routes
+    }
+  }
+  next();
+}
+
 function requireRole(roles = []) {
   return (req, res, next) => {
     if (!req.user || (roles.length > 0 && !roles.includes(req.user.role))) {
@@ -37,5 +52,6 @@ function requireRole(roles = []) {
 
 module.exports = {
   verifyToken,
+  optionalAuth,
   requireRole
 };

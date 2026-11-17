@@ -3,6 +3,31 @@ const { pool } = require('../config/database');
 // GET /api/hospitals - Retrieve all registered hospitals
 async function getAllHospitals(req, res, next) {
   try {
+    if (req.user && req.user.role === 'Donor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Donor accounts cannot access hospital records'
+      });
+    }
+
+    if (req.user && req.user.role === 'Hospital') {
+      const [hospitals] = await pool.query(`
+        SELECT 
+          hospital_id,
+          name,
+          address,
+          contact,
+          email
+        FROM hospitals
+        WHERE hospital_id = ?
+      `, [req.user.hospital_id]);
+
+      return res.json({
+        success: true,
+        data: hospitals
+      });
+    }
+
     const [hospitals] = await pool.query(`
       SELECT 
         hospital_id,
@@ -27,6 +52,21 @@ async function getAllHospitals(req, res, next) {
 async function getHospitalById(req, res, next) {
   try {
     const { id } = req.params;
+
+    if (req.user && req.user.role === 'Donor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Donor accounts cannot access hospital records'
+      });
+    }
+
+    if (req.user && req.user.role === 'Hospital' && Number(req.user.hospital_id) !== Number(id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You cannot access other hospital records'
+      });
+    }
+
     const [hospitals] = await pool.query(
       'SELECT hospital_id, name, address, contact, email FROM hospitals WHERE hospital_id = ?',
       [id]
@@ -110,6 +150,21 @@ async function createHospital(req, res, next) {
 async function updateHospital(req, res, next) {
   try {
     const { id } = req.params;
+
+    if (req.user && req.user.role === 'Donor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Donor accounts cannot modify hospital records'
+      });
+    }
+
+    if (req.user && req.user.role === 'Hospital' && Number(req.user.hospital_id) !== Number(id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You cannot modify other hospital records'
+      });
+    }
+
     const { name, address, contact, email } = req.body;
 
     const [result] = await pool.query(

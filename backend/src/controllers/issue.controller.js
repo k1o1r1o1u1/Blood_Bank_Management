@@ -21,7 +21,7 @@ async function getAllIssues(req, res, next) {
       JOIN blood_units bu ON i.unit_id = bu.unit_id
       JOIN blood_groups bg ON bu.blood_group_id = bg.blood_group_id
       LEFT JOIN staff s ON i.issued_by = s.staff_id
-      ORDER BY i.issue_id DESC
+      ORDER BY i.issue_date DESC, i.issue_id DESC
     `);
 
     res.json({

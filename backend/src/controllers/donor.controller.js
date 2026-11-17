@@ -3,6 +3,36 @@ const { pool } = require('../config/database');
 // GET /api/donors - Retrieve all donors with their blood group name
 async function getAllDonors(req, res, next) {
   try {
+    if (req.user && req.user.role === 'Hospital') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Hospital accounts cannot access donor records'
+      });
+    }
+
+    if (req.user && req.user.role === 'Donor') {
+      const [donors] = await pool.query(`
+        SELECT 
+          d.donor_id,
+          d.name,
+          d.age,
+          d.gender,
+          d.phone,
+          d.address,
+          d.blood_group_id,
+          bg.group_name AS blood_group,
+          d.last_donation_date
+        FROM donors d
+        LEFT JOIN blood_groups bg ON d.blood_group_id = bg.blood_group_id
+        WHERE d.donor_id = ?
+      `, [req.user.donor_id]);
+
+      return res.json({
+        success: true,
+        data: donors
+      });
+    }
+
     const [donors] = await pool.query(`
       SELECT 
         d.donor_id,
@@ -31,6 +61,21 @@ async function getAllDonors(req, res, next) {
 async function getDonorById(req, res, next) {
   try {
     const { id } = req.params;
+
+    if (req.user && req.user.role === 'Hospital') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Hospital accounts cannot access donor records'
+      });
+    }
+
+    if (req.user && req.user.role === 'Donor' && Number(req.user.donor_id) !== Number(id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You cannot access other donor records'
+      });
+    }
+
     const [rows] = await pool.query(`
       SELECT 
         d.donor_id,
@@ -116,6 +161,21 @@ async function createDonor(req, res, next) {
 async function updateDonor(req, res, next) {
   try {
     const { id } = req.params;
+
+    if (req.user && req.user.role === 'Hospital') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Hospital accounts cannot modify donor records'
+      });
+    }
+
+    if (req.user && req.user.role === 'Donor' && Number(req.user.donor_id) !== Number(id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You cannot modify other donor records'
+      });
+    }
+
     const { name, age, gender, phone, address, blood_group_id } = req.body;
 
     const [existing] = await pool.query('SELECT donor_id FROM donors WHERE donor_id = ?', [id]);

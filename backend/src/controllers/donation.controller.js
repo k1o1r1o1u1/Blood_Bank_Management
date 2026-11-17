@@ -3,7 +3,15 @@ const { pool } = require('../config/database');
 // GET /api/donations - Get all donations with donor and blood group details
 async function getAllDonations(req, res, next) {
   try {
-    const [donations] = await pool.query(`
+    if (req.user && req.user.role === 'Hospital') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Hospital accounts cannot access donation records'
+      });
+    }
+
+    const targetDonorId = (req.user && req.user.role === 'Donor') ? req.user.donor_id : req.query.donor_id;
+    let query = `
       SELECT 
         d.donation_id,
         d.donor_id,
@@ -16,8 +24,15 @@ async function getAllDonations(req, res, next) {
       FROM donations d
       JOIN donors dn ON d.donor_id = dn.donor_id
       JOIN blood_groups bg ON d.blood_group_id = bg.blood_group_id
-      ORDER BY d.donation_id DESC
-    `);
+    `;
+    const params = [];
+    if (targetDonorId) {
+      query += ' WHERE d.donor_id = ?';
+      params.push(targetDonorId);
+    }
+    query += ' ORDER BY d.donation_id DESC';
+
+    const [donations] = await pool.query(query, params);
     res.json({
       success: true,
       data: donations
@@ -31,6 +46,14 @@ async function getAllDonations(req, res, next) {
 async function getDonationById(req, res, next) {
   try {
     const { id } = req.params;
+
+    if (req.user && req.user.role === 'Hospital') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Hospital accounts cannot access donation records'
+      });
+    }
+
     const [rows] = await pool.query(`
       SELECT 
         d.donation_id,
@@ -51,6 +74,13 @@ async function getDonationById(req, res, next) {
       return res.status(404).json({
         success: false,
         message: 'Donation record not found'
+      });
+    }
+
+    if (req.user && req.user.role === 'Donor' && Number(rows[0].donor_id) !== Number(req.user.donor_id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You cannot access another donor\'s record'
       });
     }
 
