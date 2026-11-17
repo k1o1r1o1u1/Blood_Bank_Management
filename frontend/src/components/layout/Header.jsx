@@ -20,6 +20,25 @@ export default function Header({ onOpenMobileMenu }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || { name: 'Dr. Sarah Jenkins', role: 'Admin', email: 'admin@bloodbank.org' };
+    } catch {
+      return { name: 'Dr. Sarah Jenkins', role: 'Admin', email: 'admin@bloodbank.org' };
+    }
+  });
+
+  useEffect(() => {
+    const handleStorage = () => {
+      try {
+        const u = JSON.parse(localStorage.getItem('user'));
+        if (u) setCurrentUser(u);
+      } catch (e) {}
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   // Route title mapping
   const getPageInfo = (path) => {
     if (path.startsWith('/donors/add')) return { title: 'Add New Donor', category: 'DONORS' };
@@ -132,12 +151,12 @@ export default function Header({ onOpenMobileMenu }) {
             type="button"
             onClick={() => setProfileOpen(!profileOpen)}
             aria-expanded={profileOpen}
-            className="flex items-center gap-2.5 pl-1.5 pr-2 py-1 rounded-xl hover:bg-black/[0.03] transition-all duration-150 select-none"
+            className="flex items-center gap-2.5 pl-1.5 pr-2 py-1 rounded-xl hover:bg-black/[0.03] transition-all duration-150 select-none cursor-pointer"
           >
-            <Avatar name="Admin" size="sm" status="online" className="bg-[#1C1315] text-white ring-1 ring-border-card" />
+            <Avatar name={currentUser.name} size="sm" status="online" className="bg-[#1C1315] text-white ring-1 ring-border-card" />
             <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-semibold text-text-main leading-tight">Admin</span>
-              <span className="text-[10px] text-text-muted leading-tight">Hospital Sys</span>
+              <span className="text-xs font-semibold text-text-main leading-tight max-w-[120px] truncate">{currentUser.name}</span>
+              <span className="text-[10px] text-text-muted leading-tight">{currentUser.role} Portal</span>
             </div>
             <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-150 ${profileOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -146,8 +165,11 @@ export default function Header({ onOpenMobileMenu }) {
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-52 bg-surface-white rounded-2xl shadow-card-clean border border-border-card p-1.5 z-50 animate-in fade-in-50 zoom-in-95">
               <div className="px-3 py-2 border-b border-border-card mb-1">
-                <p className="text-xs font-semibold text-text-main">Administrator</p>
-                <p className="text-[11px] text-text-muted truncate">admin@bloodbank.org</p>
+                <p className="text-xs font-semibold text-text-main truncate">{currentUser.name}</p>
+                <p className="text-[11px] text-text-muted truncate">{currentUser.email}</p>
+                <span className="inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-[#C52233]">
+                  {currentUser.role}
+                </span>
               </div>
 
               <button

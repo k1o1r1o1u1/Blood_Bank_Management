@@ -7,85 +7,58 @@ export default function BloodGroupCard({ item, isSelected = false, onSelect }) {
   const group = item.blood_group || '—';
   const available = item.available_units ?? 0;
   const reserved = item.reserved_units ?? 0;
-  const issued = item.issued_units ?? 0;
   const expired = item.expired_units ?? 0;
-  const total = item.total_units ?? 0;
 
   const statusKey = getStockStatus(available);
-  const statusConfig = STOCK_STATUS_CONFIG[statusKey] || STOCK_STATUS_CONFIG.Adequate;
+  const statusConfig = STOCK_STATUS_CONFIG[statusKey] || STOCK_STATUS_CONFIG.Available;
   const bloodColor = BLOOD_GROUP_COLORS[group] || defaultGroupColor;
 
   return (
     <button
       type="button"
       onClick={() => onSelect(item)}
-      aria-label={`Inspect ${group} inventory details. Status is ${statusConfig.label}. ${available} units available.`}
-      className={`text-left w-full rounded-2xl p-5 border transition-all duration-200 bg-surface-white relative overflow-hidden group flex flex-col justify-between ${
+      className={`text-left w-full rounded-2xl p-4 border transition-all duration-150 bg-surface-white relative group cursor-pointer ${
         isSelected
-          ? 'border-brand-blood ring-2 ring-brand-blood/20 shadow-md -translate-y-0.5'
-          : 'border-border-card shadow-card-clean hover:border-brand-blood/40 hover:shadow-md hover:-translate-y-0.5'
+          ? 'border-brand-blood ring-2 ring-brand-blood/20 shadow-sm bg-rose-50/20'
+          : 'border-border-card shadow-xs hover:border-brand-blood/40 hover:shadow-sm'
       }`}
     >
-      {/* Top row: Blood Group badge and Stock Status indicator */}
-      <div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            {/* Blood Group Icon badge */}
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm"
-              style={{ backgroundColor: bloodColor }}
-            >
-              <span className="text-sm tracking-tight">{group}</span>
-            </div>
-            <div>
-              <span className="text-xs text-text-muted font-medium block">Blood Group</span>
-              <span className="text-sm font-bold text-text-main">{group}</span>
-            </div>
-          </div>
-
-          {/* Status Badge */}
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${statusConfig.badge}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
-            {statusConfig.label}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-xs shadow-2xs"
+            style={{ backgroundColor: bloodColor }}
+          >
+            {group}
           </span>
-        </div>
-
-        {/* Available Units big number */}
-        <div className="mt-4 pb-3 border-b border-border-card/60">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-extrabold text-text-main tracking-tight">
-              {available.toLocaleString()}
-            </span>
-            <span className="text-xs font-semibold text-text-muted">units</span>
+          <div>
+            <span className="text-xs font-bold text-text-main">{group} Reserve</span>
+            <span className="text-[10px] text-text-muted block">Blood Group</span>
           </div>
-          <span className="text-[11px] text-emerald-700 font-medium block mt-0.5">
-            In stock — status: Available
-          </span>
         </div>
+        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusConfig.badge}`}>
+          {statusConfig.label}
+        </span>
       </div>
 
-      {/* Secondary stock metrics if available */}
-      <div className="mt-3.5 space-y-2">
-        <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
-          <div className="bg-workspace-bg rounded-lg py-1.5 px-1 border border-border-card/40">
-            <span className="text-[10px] text-text-muted block font-medium">Reserved</span>
-            <span className="text-xs font-bold text-text-main block">{reserved}</span>
-          </div>
-          <div className="bg-workspace-bg rounded-lg py-1.5 px-1 border border-border-card/40">
-            <span className="text-[10px] text-text-muted block font-medium">Issued</span>
-            <span className="text-xs font-bold text-text-main block">{issued}</span>
-          </div>
-          <div className={`rounded-lg py-1.5 px-1 border ${expired > 0 ? 'bg-rose-50 border-rose-200/60' : 'bg-workspace-bg border-border-card/40'}`}>
-            <span className={`text-[10px] block font-medium ${expired > 0 ? 'text-rose-800' : 'text-text-muted'}`}>Expired</span>
-            <span className={`text-xs font-bold block ${expired > 0 ? 'text-rose-900' : 'text-text-main'}`}>{expired}</span>
-          </div>
+      <div className="flex items-baseline justify-between mb-2">
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-extrabold text-text-main tracking-tight">
+            {available}
+          </span>
+          <span className="text-[11px] font-medium text-text-muted">units</span>
         </div>
+        <span className="text-[10px] text-text-muted font-medium">
+          {reserved > 0 ? `${reserved} reserved` : expired > 0 ? `${expired} expired` : '100% active'}
+        </span>
+      </div>
 
-        {/* Drilldown call to action link */}
-        <div className="pt-2 flex items-center justify-between text-xs font-semibold text-brand-blood group-hover:text-brand-blood-dark">
-          <span className="text-[11px]">Inspect Group Units</span>
-          <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </div>
+      {/* Mini Progress Bar (relative to baseline 8 units) */}
+      <div className="w-full bg-workspace-bg rounded-full h-1.5 overflow-hidden border border-border-card/40">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${statusConfig.barColor}`}
+          style={{ width: `${Math.min(100, Math.max(10, (available / 8) * 100))}%` }}
+        />
       </div>
     </button>
   );

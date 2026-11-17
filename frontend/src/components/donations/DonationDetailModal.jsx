@@ -32,6 +32,15 @@ export default function DonationDetailModal({
 }) {
   const navigate = useNavigate();
 
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  })();
+  const canUpdateScreening = user.role === 'Admin' || user.role === 'Staff';
+
   const [selectedStatus, setSelectedStatus] = useState(
     donation?.screening_status || 'Pending'
   );
@@ -199,78 +208,89 @@ export default function DonationDetailModal({
           </p>
         </div>
 
-        {/* Screening Update Workflow */}
+        {/* Screening Verification Status */}
         <div className="space-y-3 pt-3 border-t border-border-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-text-main uppercase tracking-wider">
-              Update Screening Status
+              Screening Status
             </span>
             <span className="text-[11px] text-text-muted">
               Current: <strong>{donation.screening_status}</strong>
             </span>
           </div>
 
-          {/* Three backend-supported statuses */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: 'Pending', label: 'Pending', icon: Clock, color: 'text-amber-700 border-amber-200 hover:bg-amber-50' },
-              { id: 'Approved', label: 'Approved', icon: CheckCircle2, color: 'text-emerald-700 border-emerald-200 hover:bg-emerald-50' },
-              { id: 'Rejected', label: 'Rejected', icon: XCircle, color: 'text-brand-blood border-rose-200 hover:bg-rose-50' },
-            ].map((st) => {
-              const Icon = st.icon;
-              const isSelected = selectedStatus === st.id;
-              return (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedStatus(st.id);
-                    setConfirmPrompt(st.id !== donation.screening_status);
-                  }}
-                  disabled={updating}
-                  className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                    isSelected
-                      ? 'border-brand-blood bg-[#FFF5F6] text-brand-blood ring-1 ring-brand-blood/40 shadow-xs'
-                      : `bg-workspace-bg text-text-main border-border-card ${st.color}`
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{st.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Confirmation Prompt when status changed */}
-          {confirmPrompt && selectedStatus !== donation.screening_status && (
-            <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs space-y-2">
-              <p className="text-amber-900 font-semibold">
-                Change screening status from{' '}
-                <strong className="underline">{donation.screening_status}</strong> to{' '}
-                <strong className="underline">{selectedStatus}</strong>?
-              </p>
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedStatus(donation.screening_status);
-                    setConfirmPrompt(false);
-                  }}
-                  disabled={updating}
-                  className="px-2.5 py-1 text-xs font-semibold text-text-muted hover:text-text-main"
-                >
-                  Cancel
-                </button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={updating}
-                  onClick={handleApplyScreening}
-                  className="bg-brand-blood hover:bg-brand-blood-dark text-white text-xs shadow-active-nav"
-                >
-                  Confirm Change
-                </Button>
+          {canUpdateScreening ? (
+            <>
+              {/* Three backend-supported statuses */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'Pending', label: 'Pending', icon: Clock, color: 'text-amber-700 border-amber-200 hover:bg-amber-50' },
+                  { id: 'Approved', label: 'Approved', icon: CheckCircle2, color: 'text-emerald-700 border-emerald-200 hover:bg-emerald-50' },
+                  { id: 'Rejected', label: 'Rejected', icon: XCircle, color: 'text-brand-blood border-rose-200 hover:bg-rose-50' },
+                ].map((st) => {
+                  const Icon = st.icon;
+                  const isSelected = selectedStatus === st.id;
+                  return (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStatus(st.id);
+                        setConfirmPrompt(st.id !== donation.screening_status);
+                      }}
+                      disabled={updating}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                        isSelected
+                          ? 'border-brand-blood bg-[#FFF5F6] text-brand-blood ring-1 ring-brand-blood/40 shadow-xs'
+                          : `bg-workspace-bg text-text-main border-border-card ${st.color}`
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{st.label}</span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Confirmation Prompt when status changed */}
+              {confirmPrompt && selectedStatus !== donation.screening_status && (
+                <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs space-y-2">
+                  <p className="text-amber-900 font-semibold">
+                    Change screening status from{' '}
+                    <strong className="underline">{donation.screening_status}</strong> to{' '}
+                    <strong className="underline">{selectedStatus}</strong>?
+                  </p>
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedStatus(donation.screening_status);
+                        setConfirmPrompt(false);
+                      }}
+                      disabled={updating}
+                      className="px-2.5 py-1 text-xs font-semibold text-text-muted hover:text-text-main"
+                    >
+                      Cancel
+                    </button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      loading={updating}
+                      onClick={handleApplyScreening}
+                      className="bg-brand-blood hover:bg-brand-blood-dark text-white text-xs shadow-active-nav"
+                    >
+                      Confirm Change
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-text-muted flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                Laboratory screening analysis is verified and managed exclusively by certified Blood Bank clinical personnel.
+              </p>
             </div>
           )}
         </div>

@@ -1,0 +1,452 @@
+BLOOD BANK MANAGEMENT SYSTEM
+FRONTEND DEVELOPER DOCUMENTATION
+
+ROLE
+You are responsible for developing the complete frontend/web interface of the Blood Bank Management System.
+
+You will build the user interface using React.
+
+IMPORTANT:
+The frontend must NOT connect directly to MySQL.
+
+The architecture is:
+
+React Frontend
+       |
+       | REST API / JSON
+       v
+Node.js + Express Backend
+       |
+       | SQL
+       v
+MySQL
+
+==================================================
+1. TECHNOLOGY
+==================================================
+
+Use:
+
+- React
+- JavaScript
+- Tailwind CSS
+- React Router
+- Axios or Fetch API
+
+==================================================
+2. WEBSITE PAGES
+==================================================
+
+Create the following pages:
+
+/login
+
+/dashboard
+
+/donors
+/donors/add
+/donors/:id
+
+/donations
+/donations/add
+
+/inventory
+
+/hospitals
+/hospitals/add
+
+/requests
+/requests/:id
+
+/issues
+
+/reports
+
+==================================================
+3. DASHBOARD
+==================================================
+
+The dashboard should display:
+
+- Total Donors
+- Total Blood Units
+- Available Blood Units
+- Pending Requests
+- Registered Hospitals
+- Recent Donations
+- Recent Blood Issues
+
+Example:
+
+------------------------------------------
+| 245       | 682        | 12            |
+| Donors    | Blood      | Pending       |
+|           | Units      | Requests      |
+------------------------------------------
+
+Also display blood inventory:
+
+A+    42
+A-    15
+B+    38
+B-    12
+AB+   21
+AB-    8
+O+    55
+O-    17
+
+==================================================
+4. DONOR MANAGEMENT
+==================================================
+
+Page:
+
+/donors
+
+Display:
+
+- Donor ID
+- Name
+- Age
+- Gender
+- Blood Group
+- Phone
+- Last Donation
+- Actions
+
+Actions:
+
+- View
+- Edit
+- Delete
+
+Add donor form:
+
+- Name
+- Age
+- Gender
+- Blood Group
+- Phone
+- Address
+
+==================================================
+5. DONATION MANAGEMENT
+==================================================
+
+Page:
+
+/donations
+
+Display:
+
+- Donation ID
+- Donor
+- Blood Group
+- Donation Date
+- Quantity
+- Screening Status
+
+Actions:
+
+- Record Donation
+- Approve
+- Reject
+
+Screening status:
+
+- Pending
+- Approved
+- Rejected
+
+==================================================
+6. BLOOD INVENTORY
+==================================================
+
+Page:
+
+/inventory
+
+Display all blood groups:
+
+Blood Group | Available Units
+
+A+  | 42
+A-  | 15
+B+  | 38
+B-  | 12
+AB+ | 21
+AB- | 8
+O+  | 55
+O-  | 17
+
+Also show:
+
+- Available
+- Reserved
+- Issued
+- Expiring Soon
+
+Use cards, tables or charts where appropriate.
+
+==================================================
+7. HOSPITAL MANAGEMENT
+==================================================
+
+Page:
+
+/hospitals
+
+Display:
+
+- Hospital Name
+- Address
+- Contact
+- Email
+- Actions
+
+Actions:
+
+- Add
+- Edit
+- Delete
+- View Requests
+
+==================================================
+8. BLOOD REQUESTS
+==================================================
+
+Page:
+
+/requests
+
+Display:
+
+- Request ID
+- Hospital
+- Blood Group
+- Quantity
+- Urgency
+- Request Date
+- Status
+
+Urgency:
+
+- Normal
+- Urgent
+- Critical
+
+Status:
+
+- Pending
+- Approved
+- Rejected
+- Completed
+
+Use clear visual indicators for status.
+
+==================================================
+9. BLOOD ISSUE
+==================================================
+
+Page:
+
+/issues
+
+Blood issue workflow:
+
+1. Select hospital request
+2. Display required blood group
+3. Display required quantity
+4. Display available blood units
+5. Select unit(s)
+6. Confirm issue
+7. Show success message
+
+Example:
+
+Hospital:
+Apollo Hospital
+
+Required:
+O+
+
+Quantity:
+2 Units
+
+Available:
+5 Units
+
+[Confirm Issue]
+
+==================================================
+10. REPORTS
+==================================================
+
+Create basic reports for:
+
+- Blood Inventory
+- Donation History
+- Blood Issued
+- Hospital Requests
+- Donor Statistics
+
+Charts are optional but recommended.
+
+==================================================
+11. FRONTEND FOLDER STRUCTURE
+==================================================
+
+frontend/
+|
+|-- src/
+|   |
+|   |-- components/
+|   |   |-- Navbar.jsx
+|   |   |-- Sidebar.jsx
+|   |   |-- Card.jsx
+|   |   |-- Table.jsx
+|   |   |-- Modal.jsx
+|   |
+|   |-- pages/
+|   |   |-- Dashboard.jsx
+|   |   |-- Donors.jsx
+|   |   |-- Donations.jsx
+|   |   |-- Inventory.jsx
+|   |   |-- Hospitals.jsx
+|   |   |-- Requests.jsx
+|   |   |-- Issues.jsx
+|   |   |-- Reports.jsx
+|   |
+|   |-- services/
+|   |   |-- api.js
+|   |
+|   |-- App.jsx
+|   |-- main.jsx
+|
+|-- package.json
+|-- README.md
+|-- .env.example
+
+==================================================
+12. API INTEGRATION
+==================================================
+
+Do NOT write SQL inside React.
+
+Use the backend API.
+
+Example:
+
+GET /api/donors
+
+POST /api/donors
+
+GET /api/inventory
+
+GET /api/hospitals
+
+GET /api/requests
+
+POST /api/issues
+
+==================================================
+13. MOCK DATA
+==================================================
+
+While backend development is incomplete, use mock data.
+
+Example:
+
+const donors = [
+    {
+        donor_id: 1,
+        name: "Rahul Sharma",
+        age: 23,
+        gender: "Male",
+        blood_group: "O+"
+    }
+];
+
+When the backend is ready, replace mock data with API calls.
+
+==================================================
+14. DESIGN
+==================================================
+
+The UI should be:
+
+- Clean
+- Modern
+- Professional
+- Medical themed
+- Responsive
+- Easy to navigate
+
+Suggested colors:
+
+- White
+- Dark Red
+- Light Red
+- Gray
+- Black/Dark Gray
+
+Avoid excessive animations.
+
+The website should look like an actual hospital/blood-bank management system rather than a basic CRUD college project.
+
+==================================================
+15. IMPORTANT COLLABORATION RULE
+==================================================
+
+Do not assume database structure.
+
+You will communicate with the backend through APIs.
+
+The backend developer will provide:
+
+- API endpoint
+- HTTP method
+- Request format
+- Response format
+
+Example:
+
+POST /api/donors
+
+Request:
+
+{
+    "name": "Rahul Sharma",
+    "age": 23,
+    "gender": "Male",
+    "phone": "9876543210",
+    "address": "Mysuru",
+    "blood_group_id": 8
+}
+
+Response:
+
+{
+    "success": true,
+    "message": "Donor created successfully",
+    "donor_id": 25
+}
+
+==================================================
+16. DELIVERABLE
+==================================================
+
+Final deliverable:
+
+A complete responsive React frontend containing:
+
+- Dashboard
+- Donor Management
+- Donation Management
+- Blood Inventory
+- Hospital Management
+- Blood Requests
+- Blood Issue
+- Reports
+
+The frontend must successfully communicate with the backend REST APIs.

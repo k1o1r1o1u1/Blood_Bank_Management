@@ -66,20 +66,22 @@ export default function RequestFilters({
             <option value="Normal">Normal</option>
           </select>
 
-          {/* Hospital Filter */}
-          <select
-            value={hospitalFilter}
-            onChange={(e) => onHospitalChange(e.target.value)}
-            aria-label="Filter by Hospital"
-            className="px-3 py-2 bg-workspace-bg border border-border-card rounded-xl text-xs text-text-main font-medium focus:outline-none focus:ring-2 focus:ring-brand-blood/20 focus:border-brand-blood transition-colors max-w-[180px] truncate"
-          >
-            <option value="ALL">All Hospitals</option>
-            {hospitals.map((h) => (
-              <option key={h.hospital_id} value={String(h.hospital_id)}>
-                {h.name}
-              </option>
-            ))}
-          </select>
+          {/* Hospital Filter (Only rendered when multiple hospitals are present for Admin/Staff) */}
+          {hospitals && hospitals.length > 0 && (
+            <select
+              value={hospitalFilter}
+              onChange={(e) => onHospitalChange(e.target.value)}
+              aria-label="Filter by Hospital"
+              className="px-3 py-2 bg-workspace-bg border border-border-card rounded-xl text-xs text-text-main font-medium focus:outline-none focus:ring-2 focus:ring-brand-blood/20 focus:border-brand-blood transition-colors max-w-[180px] truncate"
+            >
+              <option value="ALL">All Hospitals</option>
+              {hospitals.map((h) => (
+                <option key={h.hospital_id} value={String(h.hospital_id)}>
+                  {h.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Active Results Counter & Clear */}
           <div className="flex items-center gap-2 pl-2 text-xs text-text-muted border-l border-border-card">

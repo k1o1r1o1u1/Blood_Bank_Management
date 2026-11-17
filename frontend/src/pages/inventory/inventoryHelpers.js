@@ -1,19 +1,12 @@
 // ─── Centralized UI Presentation Thresholds ────────────────────────────────────
-// IMPORTANT DATA INTEGRITY NOTE:
-// The backend database and REST API do NOT define clinical, medical, or authoritative
-// blood-bank inventory thresholds or reserve minimums.
-// The classifications below are strictly FRONTEND PRESENTATION CONVENTIONS designed
-// to visually categorize volume ranges for user interface indicators only.
 export const UI_PRESENTATION_THRESHOLDS = {
-  LIMITED: 15,   // Units < 15: Highlighted as "Limited" volume in UI
-  AVAILABLE: 50, // Units 15 to 49: Displayed as "Available"
-  // Units 50+: Displayed as "Substantial"
+  LOW: 2,        // Units <= 2: Highlighted as "Low" reserve in UI
+  ADEQUATE: 5,   // Units 3 to 5: Displayed as "Adequate"
+  OPTIMAL: 6,    // Units 6+: Displayed as "Optimal"
 };
 
 /**
- * Returns a neutral frontend-only display status based on unit counts.
- * Uses descriptive volume terms ("Depleted", "Limited", "Available", "Substantial")
- * rather than medical assertions.
+ * Returns a clean, realistic frontend display status based on unit counts.
  * 
  * @param {number} availableUnits 
  * @returns {'Depleted' | 'Limited' | 'Available' | 'Substantial'}
@@ -21,8 +14,8 @@ export const UI_PRESENTATION_THRESHOLDS = {
 export function getStockStatus(availableUnits) {
   const count = Number(availableUnits) || 0;
   if (count === 0) return 'Depleted';
-  if (count < UI_PRESENTATION_THRESHOLDS.LIMITED) return 'Limited';
-  if (count < UI_PRESENTATION_THRESHOLDS.AVAILABLE) return 'Available';
+  if (count <= UI_PRESENTATION_THRESHOLDS.LOW) return 'Limited';
+  if (count < UI_PRESENTATION_THRESHOLDS.OPTIMAL) return 'Available';
   return 'Substantial';
 }
 

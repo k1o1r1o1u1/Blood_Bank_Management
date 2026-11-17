@@ -57,6 +57,8 @@ CREATE TABLE hospitals (
     address VARCHAR(255) NULL,
     contact VARCHAR(50) NOT NULL,
     email VARCHAR(100) NULL UNIQUE,
+    password VARCHAR(255) NOT NULL DEFAULT 'hospital123',
+    role VARCHAR(20) NOT NULL DEFAULT 'Hospital',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -71,6 +73,9 @@ CREATE TABLE hospitals (
 CREATE TABLE donors (
     donor_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NULL UNIQUE,
+    password VARCHAR(255) NOT NULL DEFAULT 'donor123',
+    role VARCHAR(20) NOT NULL DEFAULT 'Donor',
     age INT NOT NULL,
     gender VARCHAR(10) NULL,
     phone VARCHAR(20) NOT NULL UNIQUE,

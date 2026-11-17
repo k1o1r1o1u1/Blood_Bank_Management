@@ -19,6 +19,16 @@ import Button from '../../components/ui/Button';
 export default function Donations() {
   const navigate = useNavigate();
 
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  })();
+  const isDonor = user.role === 'Donor';
+  const canRecord = user.role === 'Admin' || user.role === 'Staff';
+
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -115,13 +125,15 @@ export default function Donations() {
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-brand-blood-light border border-brand-blood/20 text-brand-blood text-[11px] font-semibold tracking-wide">
             <Droplet className="w-3.5 h-3.5" />
-            <span>Intake &amp; Screening Operations</span>
+            <span>{isDonor ? 'Personal Donor History' : 'Intake & Screening Operations'}</span>
           </div>
           <h1 className="text-2xl font-bold text-text-main tracking-tight">
-            Donation Operations
+            {isDonor ? 'My Blood Donations' : 'Donation Operations'}
           </h1>
           <p className="text-xs sm:text-sm text-text-muted">
-            Record blood collections and manage laboratory screening verification
+            {isDonor
+              ? 'View your blood donation records and laboratory screening status'
+              : 'Record blood collections and manage laboratory screening verification'}
           </p>
         </div>
 
@@ -136,15 +148,17 @@ export default function Donations() {
           >
             Refresh
           </Button>
-          <Button
-            variant="primary"
-            size="md"
-            icon={PlusCircle}
-            onClick={() => navigate('/donations/add')}
-            className="bg-brand-blood hover:bg-brand-blood-dark text-white shadow-active-nav"
-          >
-            Record Donation
-          </Button>
+          {canRecord && (
+            <Button
+              variant="primary"
+              size="md"
+              icon={PlusCircle}
+              onClick={() => navigate('/donations/add')}
+              className="bg-brand-blood hover:bg-brand-blood-dark text-white shadow-active-nav"
+            >
+              Record Donation
+            </Button>
+          )}
         </div>
       </div>
 

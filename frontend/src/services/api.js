@@ -87,6 +87,10 @@ export const issueService = {
 
 export const dashboardService = {
   getStats: () => api.get('/dashboard/stats'),
+  getAdminDashboard: () => api.get('/dashboard/admin'),
+  getStaffDashboard: () => api.get('/dashboard/staff'),
+  getHospitalDashboard: () => api.get('/dashboard/hospital'),
+  getDonorDashboard: () => api.get('/dashboard/donor'),
 };
 
 export default api;

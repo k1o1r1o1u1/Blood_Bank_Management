@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Layout
 import DashboardLayout from './layouts/DashboardLayout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Pages
 import Login from './pages/auth/Login';
@@ -32,35 +33,172 @@ export default function App() {
         {/* Authenticated Workspace with DashboardLayout Shell */}
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Admin']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staff/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospital/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Hospital']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donor/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Donor']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Donors Routes */}
-          <Route path="/donors" element={<Donors />} />
-          <Route path="/donors/add" element={<AddDonor />} />
-          <Route path="/donors/:id" element={<DonorDetails />} />
+          {/* Donors Routes - Admin & Staff only */}
+          <Route
+            path="/donors"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <Donors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donors/add"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <AddDonor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donors/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <DonorDetails />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Donations Routes */}
-          <Route path="/donations" element={<Donations />} />
-          <Route path="/donations/add" element={<AddDonation />} />
+          {/* Donations Routes - Admin, Staff, and Donors (scoped) */}
+          <Route
+            path="/donations"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff', 'Donor']}>
+                <Donations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donations/add"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <AddDonation />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Inventory Route */}
-          <Route path="/inventory" element={<Inventory />} />
+          {/* Inventory Route - Available to all authenticated accounts */}
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoute>
+                <Inventory />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Hospitals Routes */}
-          <Route path="/hospitals" element={<Hospitals />} />
-          <Route path="/hospitals/add" element={<AddHospital />} />
+          {/* Hospitals Routes - Admin & Staff only */}
+          <Route
+            path="/hospitals"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <Hospitals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospitals/add"
+            element={
+              <ProtectedRoute allowedRoles={['Admin']}>
+                <AddHospital />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Requests Routes */}
-          <Route path="/requests" element={<Requests />} />
-          <Route path="/requests/add" element={<AddRequest />} />
-          <Route path="/requests/:id" element={<RequestDetails />} />
+          {/* Requests Routes - Admin, Staff & Partner Hospitals */}
+          <Route
+            path="/requests"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff', 'Hospital']}>
+                <Requests />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/requests/add"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff', 'Hospital']}>
+                <AddRequest />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/requests/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff', 'Hospital']}>
+                <RequestDetails />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Issues Routes */}
-          <Route path="/issues" element={<Issues />} />
-          <Route path="/issues/:id" element={<IssueDetails />} />
+          {/* Issues Routes - Admin & Staff only */}
+          <Route
+            path="/issues"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <Issues />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/issues/:id"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <IssueDetails />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Reports Route */}
-          <Route path="/reports" element={<Reports />} />
+          {/* Reports Route - Admin & Staff only */}
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         {/* Catch-all route */}

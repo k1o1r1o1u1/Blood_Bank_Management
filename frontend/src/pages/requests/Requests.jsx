@@ -20,6 +20,15 @@ const PAGE_SIZE = 10;
 export default function Requests() {
   const navigate = useNavigate();
 
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  })();
+  const isHospital = user.role === 'Hospital';
+
   // Primary data states
   const [requests, setRequests] = useState([]);
   const [hospitals, setHospitals] = useState([]);
@@ -57,11 +66,11 @@ export default function Requests() {
       const params = {};
       if (statusFilter !== 'ALL') params.status = statusFilter;
       if (urgencyFilter !== 'ALL') params.urgency = urgencyFilter;
-      if (hospitalFilter !== 'ALL') params.hospital_id = hospitalFilter;
+      if (!isHospital && hospitalFilter !== 'ALL') params.hospital_id = hospitalFilter;
 
       const [reqRes, hospRes] = await Promise.all([
         requestService.getAll(params),
-        hospitalService.getAll().catch(() => ({ data: [] })),
+        !isHospital ? hospitalService.getAll().catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
       ]);
 
       setRequests(reqRes.data || []);
@@ -73,7 +82,7 @@ export default function Requests() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [statusFilter, urgencyFilter, hospitalFilter]);
+  }, [statusFilter, urgencyFilter, hospitalFilter, isHospital]);
 
   useEffect(() => {
     fetchRequests();
@@ -190,11 +199,13 @@ export default function Requests() {
           <div className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
             <span>OPERATIONS</span>
             <span>/</span>
-            <span>Blood Requests</span>
+            <span>{isHospital ? 'Requisitions' : 'Blood Requests'}</span>
           </div>
-          <h1 className="text-page-title">Blood Requests</h1>
+          <h1 className="text-page-title">{isHospital ? 'Hospital Blood Requisitions' : 'Blood Requests'}</h1>
           <p className="text-page-subtitle">
-            Monitor incoming blood requirements and coordinate fulfillment
+            {isHospital
+              ? "Track your hospital's blood unit requests and requisition statuses"
+              : 'Monitor incoming blood requirements and coordinate fulfillment'}
           </p>
         </div>
 
@@ -235,7 +246,7 @@ export default function Requests() {
           onUrgencyChange={setUrgencyFilter}
           hospitalFilter={hospitalFilter}
           onHospitalChange={setHospitalFilter}
-          hospitals={hospitals}
+          hospitals={isHospital ? [] : hospitals}
           totalCount={requests.length}
           filteredCount={filteredRequests.length}
           onClearFilters={handleClearFilters}

@@ -27,6 +27,15 @@ export default function RequestDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  })();
+  const canPerformWorkflow = user.role === 'Admin' || user.role === 'Staff';
+
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -300,35 +309,39 @@ export default function RequestDetails() {
             <div className="space-y-1">
               <strong className="block font-bold">Awaiting Operational Decision</strong>
               <p className="text-amber-800 leading-relaxed max-w-xl">
-                This request has been logged by the partner hospital and is pending verification. Approve to queue for fulfillment, or reject if requirements cannot be serviced.
+                {canPerformWorkflow
+                  ? 'This request has been logged by the partner hospital and is pending verification. Approve to queue for fulfillment, or reject if requirements cannot be serviced.'
+                  : 'Your requisition is currently queued and awaiting review by the Blood Bank clinical staff.'}
               </p>
             </div>
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setTargetStatus('Approved');
-                  setModalOpen(true);
-                  setStatusError(null);
-                }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-sm"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                Approve Request
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTargetStatus('Rejected');
-                  setModalOpen(true);
-                  setStatusError(null);
-                }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors shadow-sm"
-              >
-                <XCircle className="w-4 h-4" />
-                Reject Request
-              </button>
-            </div>
+            {canPerformWorkflow && (
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetStatus('Approved');
+                    setModalOpen(true);
+                    setStatusError(null);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-sm"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Approve Request
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetStatus('Rejected');
+                    setModalOpen(true);
+                    setStatusError(null);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors shadow-sm"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Reject Request
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -337,17 +350,21 @@ export default function RequestDetails() {
             <div className="space-y-1">
               <strong className="block font-bold">Approved for Issue Operations</strong>
               <p className="text-emerald-800 leading-relaxed max-w-xl">
-                This request is verified and ready for fulfillment. Physical blood units can now be selected and dispatched through the atomic Blood Issue transaction console.
+                {canPerformWorkflow
+                  ? 'This request is verified and ready for fulfillment. Physical blood units can now be selected and dispatched through the atomic Blood Issue transaction console.'
+                  : 'Your requisition has been approved by the Blood Bank. Clinical staff will issue and dispatch units shortly.'}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsIssueModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-blood text-white font-bold hover:bg-brand-blood-dark transition-colors shadow-active-nav"
-            >
-              <PackageCheck className="w-4 h-4" />
-              Issue Blood Units
-            </button>
+            {canPerformWorkflow && (
+              <button
+                type="button"
+                onClick={() => setIsIssueModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-blood text-white font-bold hover:bg-brand-blood-dark transition-colors shadow-active-nav"
+              >
+                <PackageCheck className="w-4 h-4" />
+                Issue Blood Units
+              </button>
+            )}
           </div>
         )}
 

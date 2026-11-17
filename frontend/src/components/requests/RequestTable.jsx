@@ -24,6 +24,16 @@ export default function RequestTable({
   onStatusAction, // (request, targetStatus)
 }) {
   const navigate = useNavigate();
+
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || {};
+    } catch {
+      return {};
+    }
+  })();
+  const canApprove = user.role === 'Admin' || user.role === 'Staff';
+
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
 
@@ -115,8 +125,8 @@ export default function RequestTable({
                   {/* Actions */}
                   <td className="py-3.5 px-5 text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-1.5 justify-end">
-                      {/* Workflow mutations for Pending status */}
-                      {isPending && (
+                      {/* Workflow mutations for Pending status (Staff & Admin only) */}
+                      {isPending && canApprove && (
                         <>
                           <button
                             type="button"
@@ -211,7 +221,7 @@ export default function RequestTable({
                   {formatShortDate(r.request_date)}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  {isPending && (
+                  {isPending && canApprove && (
                     <>
                       <button
                         type="button"

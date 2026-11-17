@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -20,36 +20,107 @@ export default function MobileSidebar({
 }) {
   if (!isOpen) return null;
 
-  const navSections = [
-    {
-      title: 'OVERVIEW',
-      items: [
-        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-      ],
-    },
-    {
-      title: 'MANAGEMENT',
-      items: [
-        { label: 'Donors', path: '/donors', icon: Users },
-        { label: 'Donations', path: '/donations', icon: Droplet },
-        { label: 'Hospitals', path: '/hospitals', icon: Building2 },
-      ],
-    },
-    {
-      title: 'OPERATIONS',
-      items: [
-        { label: 'Inventory', path: '/inventory', icon: Package },
-        { label: 'Requests', path: '/requests', icon: ClipboardList },
-        { label: 'Issues', path: '/issues', icon: Send },
-      ],
-    },
-    {
-      title: 'ANALYTICS',
-      items: [
-        { label: 'Reports', path: '/reports', icon: BarChart3 },
-      ],
-    },
-  ];
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user')) || { role: 'Admin', name: 'Admin' };
+    } catch {
+      return { role: 'Admin', name: 'Admin' };
+    }
+  });
+
+  const role = user.role || 'Admin';
+
+  let navSections = [];
+  if (role === 'Hospital') {
+    navSections = [
+      {
+        title: 'HOSPITAL PORTAL',
+        items: [
+          { label: 'Requisition Desk', path: '/dashboard', icon: LayoutDashboard },
+          { label: 'Blood Requests', path: '/requests', icon: ClipboardList },
+          { label: 'Raise Requisition', path: '/requests/add', icon: Send },
+        ],
+      },
+      {
+        title: 'INVENTORY REFERENCE',
+        items: [
+          { label: 'Available Stock', path: '/inventory', icon: Package },
+        ],
+      },
+    ];
+  } else if (role === 'Donor') {
+    navSections = [
+      {
+        title: 'DONOR PORTAL',
+        items: [
+          { label: 'Donor Pass', path: '/dashboard', icon: LayoutDashboard },
+          { label: 'My Donations', path: '/donations', icon: Droplet },
+        ],
+      },
+      {
+        title: 'COMMUNITY',
+        items: [
+          { label: 'Blood Stock Levels', path: '/inventory', icon: Package },
+        ],
+      },
+    ];
+  } else if (role === 'Staff') {
+    navSections = [
+      {
+        title: 'OVERVIEW',
+        items: [
+          { label: 'Workstation', path: '/dashboard', icon: LayoutDashboard },
+        ],
+      },
+      {
+        title: 'CLINICAL INTAKE',
+        items: [
+          { label: 'Donors', path: '/donors', icon: Users },
+          { label: 'Donations & Screening', path: '/donations', icon: Droplet },
+        ],
+      },
+      {
+        title: 'DISPATCH',
+        items: [
+          { label: 'Inventory Matrix', path: '/inventory', icon: Package },
+          { label: 'Hospital Requests', path: '/requests', icon: ClipboardList },
+          { label: 'Issue Blood', path: '/issues', icon: Send },
+        ],
+      },
+    ];
+  } else {
+    // Admin (Full Access)
+    navSections = [
+      {
+        title: 'OVERVIEW',
+        items: [
+          { label: 'Admin Dashboard', path: '/dashboard', icon: LayoutDashboard },
+        ],
+      },
+      {
+        title: 'MANAGEMENT',
+        items: [
+          { label: 'Donors', path: '/donors', icon: Users },
+          { label: 'Donations', path: '/donations', icon: Droplet },
+          { label: 'Hospitals', path: '/hospitals', icon: Building2 },
+        ],
+      },
+      {
+        title: 'OPERATIONS',
+        items: [
+          { label: 'Inventory', path: '/inventory', icon: Package },
+          { label: 'Requests', path: '/requests', icon: ClipboardList },
+          { label: 'Issues', path: '/issues', icon: Send },
+        ],
+      },
+      {
+        title: 'ANALYTICS',
+        items: [
+          { label: 'Reports', path: '/reports', icon: BarChart3 },
+        ],
+      },
+    ];
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex lg:hidden">
@@ -71,7 +142,7 @@ export default function MobileSidebar({
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-base text-white leading-tight">BloodCare</span>
-                <span className="text-[11px] text-[#8E8688] leading-tight">Blood Bank System</span>
+                <span className="text-[11px] text-[#8E8688] leading-tight">{role} Portal</span>
               </div>
             </div>
 
@@ -100,15 +171,15 @@ export default function MobileSidebar({
                       to={item.path}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 h-11 px-3.5 rounded-xl text-sm transition-colors ${
+                        `flex items-center gap-3 h-11 px-3.5 rounded-xl transition-all duration-150 ${
                           isActive
                             ? 'bg-brand-blood text-white font-medium shadow-active-nav'
-                            : 'text-[#B8B0B2] hover:text-white hover:bg-white/10'
+                            : 'text-[#B8B0B2] hover:text-white hover:bg-white/[0.06]'
                         }`
                       }
                     >
-                      <Icon className="w-5 h-5" />
-                      <span>{item.label}</span>
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="text-sm tracking-tight truncate">{item.label}</span>
                     </NavLink>
                   );
                 })}
@@ -117,22 +188,15 @@ export default function MobileSidebar({
           </nav>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-border-sidebar flex items-center justify-between bg-white/[0.02]">
-          <div className="flex items-center gap-2.5">
-            <Avatar name="Admin" size="sm" status="online" className="ring-1 ring-white/20" />
-            <div>
-              <p className="text-xs font-semibold text-white leading-tight">Admin</p>
-              <p className="text-[10px] text-[#8E8688] leading-tight">Administrator</p>
+        {/* User Card */}
+        <div className="p-4 border-t border-border-sidebar">
+          <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.03] border border-border-sidebar">
+            <Avatar name={user.name || 'User'} size="sm" status="online" className="shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-semibold text-white leading-tight truncate">{user.name || 'User'}</span>
+              <span className="text-[10px] text-[#8E8688] leading-tight truncate">{role}</span>
             </div>
           </div>
-          <button
-            type="button"
-            className="p-2 text-[#8E8688] hover:text-white rounded-lg"
-            aria-label="Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
         </div>
       </aside>
     </div>
